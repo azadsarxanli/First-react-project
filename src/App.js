@@ -1,25 +1,88 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import { Col, Container, Row } from "reactstrap";
+import Category from "./Category";
+import Navi from "./Navi";
+import Product from "./Product";
+import CartList from "./CartList";
+import alertify from "alertifyjs";
+import { Route, Switch } from "react-router";
+import NotFound from "./NotFound";
+export default class App extends Component {
+  state = {
+    currentCategory: "",
+    products: [],
+    cart: [],
+  };
+  componentDidMount() {
+    this.getProducts();
+  }
+  changeCategory = (category) => {
+    this.setState({ currentCategory: category.categoryName });
+    this.getProducts(category.id);
+  };
+  getProducts = (categoryId) => {
+    let url = "http://localhost:3000/products";
+    if (categoryId) {
+      url += "?categoryId=" + categoryId;
+    }
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => this.setState({ products: data }));
+  };
+  addToCard = (product) => {
+    let newCart = this.state.cart;
+    var addedItem = newCart.find((c) => c.product.id === product.id);
+    if (addedItem) {
+      addedItem.quantity += 1;
+    } else {
+      newCart.push({ product: product, quantity: 1 });
+    }
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    this.setState({ cart: newCart });
+    console.log(newCart);
+    alertify.success(product.productName + " added to cart");
+  };
+  removeFromCart = (product) => {
+    let newCart = this.state.cart.filter((c) => c.product.id !== product.id);
+    this.setState({ cart: newCart });
+  };
+  render() {
+    let categoryInfo = { title: "CategoryList" };
+    let productInfo = { title: "ProductList" };
+    return (
+      <div>
+        <Container>
+          <Navi removeFromCart={this.removeFromCart} cart={this.state.cart} />
+          <Row>
+            <Col xs="3">
+              <Category
+                currentCategory={this.state.currentCategory}
+                changeCategory={this.changeCategory}
+                info={categoryInfo}
+              />
+            </Col>
+            <Col xs="9">
+              <Switch>
+                <Route
+                  exact
+                  path="/"
+                  render={(props) => (
+                    <Product
+                      {...props}
+                      addToCard={this.addToCard}
+                      products={this.state.products}
+                      currentCategory={this.state.currentCategory}
+                      info={productInfo}
+                    />
+                  )}
+                ></Route>
+                <Route exact path="/cart" component={CartList}></Route>
+                <Route component={NotFound}></Route>
+              </Switch>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    );
+  }
 }
-
-export default App;
