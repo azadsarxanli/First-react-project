@@ -3,10 +3,10 @@ import { Col, Container, Row } from "reactstrap";
 import Category from "./Category";
 import Navi from "./Navi";
 import Product from "./Product";
+import { Route, Routes } from "react-router-dom";
+import NotFound from "./NotFound";
 import CartList from "./CartList";
 import alertify from "alertifyjs";
-import { Route, Switch } from "react-router";
-import NotFound from "./NotFound";
 export default class App extends Component {
   state = {
     currentCategory: "",
@@ -62,23 +62,12 @@ export default class App extends Component {
               />
             </Col>
             <Col xs="9">
-              <Switch>
-                <Route
-                  exact
-                  path="/"
-                  render={(props) => (
-                    <Product
-                      {...props}
-                      addToCard={this.addToCard}
-                      products={this.state.products}
-                      currentCategory={this.state.currentCategory}
-                      info={productInfo}
-                    />
-                  )}
-                ></Route>
-                <Route exact path="/cart" component={CartList}></Route>
-                <Route component={NotFound}></Route>
-              </Switch>
+              <Product
+                addToCard={this.addToCard}
+                products={this.state.products}
+                currentCategory={this.state.currentCategory}
+                info={productInfo}
+              />
             </Col>
           </Row>
         </Container>
